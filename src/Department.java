@@ -14,7 +14,7 @@ public class Department {
         this.students = new ArrayList<>();
     }
 
-    // ADD THESE GETTER METHODS (if they're missing)
+    // getters
     public String getDepartmentName() {
         return departmentName;
     }
@@ -31,26 +31,43 @@ public class Department {
         return students;
     }
 
-    // Your existing methods
+    // setters for loading from file
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
+    }
+
+    public void setCourses(List<Course> courses) {
+        this.courses = courses;
+    }
+
+    public void setLecturers(List<Lecturer> lecturers) {
+        this.lecturers = lecturers;
+    }
+
+    public void setStudents(List<Student> students) {
+        this.students = students;
+    }
+
+    // add methods
     public void addCourse(Course course) {
         courses.add(course);
-        System.out.println("Added course: " + course.getCourseName());
+        System.out.println("added course: " + course.getCourseName());
     }
 
     public void addLecturer(Lecturer lecturer) {
         lecturers.add(lecturer);
-        System.out.println("Added lecturer: " + lecturer.getName());
+        System.out.println("added lecturer: " + lecturer.getName());
     }
 
     public void addStudent(Student student) {
         students.add(student);
-        System.out.println("Added student: " + student.getName());
+        System.out.println("added student: " + student.getName());
     }
 
     public void displayInfo() {
         System.out.println("\n=== " + departmentName + " DEPARTMENT ===");
-        System.out.println("Number of courses: " + courses.size());
-        System.out.println("Number of lecturers: " + lecturers.size());
-        System.out.println("Number of students: " + students.size());
+        System.out.println("courses: " + courses.size());
+        System.out.println("lecturers: " + lecturers.size());
+        System.out.println("students: " + students.size());
     }
 }

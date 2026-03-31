@@ -4,21 +4,106 @@ import java.util.InputMismatchException;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        Department csDept = null;
+        String saveFile = "university_data.txt";
 
         System.out.println("=================================");
-        System.out.println("UNIVERSITY SYSTEM WITH INPUT");
+        System.out.println("UNIVERSITY SYSTEM");
         System.out.println("=================================");
 
-        // create department with user input
-        System.out.println("\n---CREATE DEPARTMENT---");
-        System.out.print("enter department name: ");
-        String deptName = scanner.nextLine();
+        // check for existing save file
+        System.out.println("\n---LOAD SAVED DATA?---");
+        System.out.print("do you want to load previous data? (yes/no): ");
+        String loadChoice = scanner.nextLine();
 
-        Department csDept = new Department(deptName);
-        System.out.println("Created " + csDept.getDepartmentName() + " Department\n");
+        if (loadChoice.equalsIgnoreCase("yes") && FileHandler.saveFileExists(saveFile)) {
+            csDept = FileHandler.loadData(saveFile);
+            if (csDept != null) {
+                System.out.println("loaded " + csDept.getDepartmentName() + " department");
+                csDept.displayInfo();
+            }
+        }
 
-        // add courses with user input
-        System.out.println("---ADD COURSES---");
+        // if no data loaded create new department
+        if (csDept == null) {
+            System.out.println("\n---CREATE NEW DEPARTMENT---");
+            System.out.print("enter department name: ");
+            String deptName = scanner.nextLine();
+            csDept = new Department(deptName);
+            System.out.println("created " + csDept.getDepartmentName() + " department\n");
+
+            // add courses
+            addCourses(scanner, csDept);
+
+            // add lecturers
+            addLecturers(scanner, csDept);
+
+            // add students
+            addStudents(scanner, csDept);
+
+            // assign lecturers to courses
+            assignLecturersToCourses(scanner, csDept);
+        }
+
+        // show menu for further actions
+        boolean running = true;
+        while (running) {
+            System.out.println("\n=================================");
+            System.out.println("MAIN MENU");
+            System.out.println("=================================");
+            System.out.println("1. view all data");
+            System.out.println("2. add more courses");
+            System.out.println("3. add more lecturers");
+            System.out.println("4. add more students");
+            System.out.println("5. assign lecturers to courses");
+            System.out.println("6. save and exit");
+            System.out.println("7. exit without saving");
+            System.out.print("\nchoose an option: ");
+
+            try {
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+
+                switch (choice) {
+                    case 1:
+                        displayAllData(csDept);
+                        break;
+                    case 2:
+                        addCourses(scanner, csDept);
+                        break;
+                    case 3:
+                        addLecturers(scanner, csDept);
+                        break;
+                    case 4:
+                        addStudents(scanner, csDept);
+                        break;
+                    case 5:
+                        assignLecturersToCourses(scanner, csDept);
+                        break;
+                    case 6:
+                        FileHandler.saveData(csDept, saveFile);
+                        System.out.println("data saved. goodbye!");
+                        running = false;
+                        break;
+                    case 7:
+                        System.out.println("exiting without saving. goodbye!");
+                        running = false;
+                        break;
+                    default:
+                        System.out.println("invalid option. try again.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("error: please enter a number!");
+                scanner.nextLine();
+            }
+        }
+
+        scanner.close();
+    }
+
+    // method to add courses
+    public static void addCourses(Scanner scanner, Department dept) {
+        System.out.println("\n---ADD COURSES---");
 
         try {
             System.out.print("how many courses do you want to add? ");
@@ -26,29 +111,31 @@ public class Main {
             scanner.nextLine();
 
             for (int i = 1; i <= numCourses; i++) {
-                System.out.println("\nenter details for Course " + i + ":");
+                System.out.println("\nenter details for course " + i + ":");
 
-                System.out.print("course Code (e.g., CS101): ");
+                System.out.print("course code (e.g., CS101): ");
                 String code = scanner.nextLine();
 
-                System.out.print("course Name: ");
+                System.out.print("course name: ");
                 String name = scanner.nextLine();
 
-                System.out.print("credit Units: ");
+                System.out.print("credit units: ");
                 int credits = scanner.nextInt();
                 scanner.nextLine();
 
                 Course course = new Course(code, name, credits);
-                csDept.addCourse(course);
+                dept.addCourse(course);
 
                 System.out.println("course added successfully!");
             }
         } catch (InputMismatchException e) {
-            System.out.println("error: Please enter a valid number!");
+            System.out.println("error: please enter a valid number!");
             scanner.nextLine();
         }
+    }
 
-        // add lecturers with user input
+    // method to add lecturers
+    public static void addLecturers(Scanner scanner, Department dept) {
         System.out.println("\n---ADD LECTURERS---");
 
         try {
@@ -57,7 +144,7 @@ public class Main {
             scanner.nextLine();
 
             for (int i = 1; i <= numLecturers; i++) {
-                System.out.println("\nenter details for Lecturer " + i + ":");
+                System.out.println("\nenter details for lecturer " + i + ":");
 
                 System.out.print("lecturer ID: ");
                 String id = scanner.nextLine();
@@ -65,27 +152,29 @@ public class Main {
                 System.out.print("name: ");
                 String name = scanner.nextLine();
 
-                System.out.print("Email: ");
+                System.out.print("email: ");
                 String email = scanner.nextLine();
 
                 System.out.print("salary: ");
                 double salary = scanner.nextDouble();
                 scanner.nextLine();
 
-                System.out.print("Subject they teach: ");
+                System.out.print("subject they teach: ");
                 String subject = scanner.nextLine();
 
                 Lecturer lecturer = new Lecturer(id, name, email, salary, subject);
-                csDept.addLecturer(lecturer);
+                dept.addLecturer(lecturer);
 
                 System.out.println("lecturer added successfully!");
             }
         } catch (InputMismatchException e) {
-            System.out.println("error: Please enter a valid number for salary!");
+            System.out.println("error: please enter a valid number for salary!");
             scanner.nextLine();
         }
+    }
 
-        // add students with user inputs
+    // method to add students
+    public static void addStudents(Scanner scanner, Department dept) {
         System.out.println("\n---ADD STUDENTS---");
 
         try {
@@ -94,7 +183,7 @@ public class Main {
             scanner.nextLine();
 
             for (int i = 1; i <= numStudents; i++) {
-                System.out.println("\nenter details for Student " + i + ":");
+                System.out.println("\nenter details for student " + i + ":");
 
                 System.out.print("student ID: ");
                 String id = scanner.nextLine();
@@ -108,7 +197,7 @@ public class Main {
                 System.out.print("course: ");
                 String course = scanner.nextLine();
 
-                System.out.print("Year (1-4): ");
+                System.out.print("year (1-4): ");
                 int year = scanner.nextInt();
                 scanner.nextLine();
 
@@ -117,31 +206,38 @@ public class Main {
                 }
 
                 Student student = new Student(id, name, email, course, year);
-                csDept.addStudent(student);
+                dept.addStudent(student);
 
                 System.out.println("student added successfully!");
             }
         } catch (InputMismatchException e) {
-            System.out.println("error: Please enter a valid number for year!");
+            System.out.println("error: please enter a valid number for year!");
             scanner.nextLine();
         } catch (IllegalArgumentException e) {
             System.out.println("error: " + e.getMessage());
         }
+    }
 
-        // assign lecturers to courses
+    // method to assign lecturers to courses
+    public static void assignLecturersToCourses(Scanner scanner, Department dept) {
+        if (dept.getCourses().isEmpty() || dept.getLecturers().isEmpty()) {
+            System.out.println("need both courses and lecturers before assigning!");
+            return;
+        }
+
         System.out.println("\n---ASSIGN LECTURERS TO COURSES---");
 
         try {
             // show available courses
-            System.out.println("\navailable Courses:");
-            for (int i = 0; i < csDept.getCourses().size(); i++) {
-                System.out.println((i+1) + ". " + csDept.getCourses().get(i).getCourseName());
+            System.out.println("\navailable courses:");
+            for (int i = 0; i < dept.getCourses().size(); i++) {
+                System.out.println((i+1) + ". " + dept.getCourses().get(i).getCourseName());
             }
 
-            // Show available lecturers
-            System.out.println("\navailable Lecturers:");
-            for (int i = 0; i < csDept.getLecturers().size(); i++) {
-                System.out.println((i+1) + ". " + csDept.getLecturers().get(i).getName());
+            // show available lecturers
+            System.out.println("\navailable lecturers:");
+            for (int i = 0; i < dept.getLecturers().size(); i++) {
+                System.out.println((i+1) + ". " + dept.getLecturers().get(i).getName());
             }
 
             System.out.print("\nhow many assignments do you want to make? ");
@@ -149,7 +245,7 @@ public class Main {
             scanner.nextLine();
 
             for (int i = 1; i <= numAssignments; i++) {
-                System.out.println("\nAssignment " + i + ":");
+                System.out.println("\nassignment " + i + ":");
 
                 try {
                     System.out.print("enter course number: ");
@@ -160,113 +256,98 @@ public class Main {
                     int lecturerNum = scanner.nextInt();
                     scanner.nextLine();
 
-                    Course selectedCourse = csDept.getCourses().get(courseNum - 1);
-                    Lecturer selectedLecturer = csDept.getLecturers().get(lecturerNum - 1);
+                    Course selectedCourse = dept.getCourses().get(courseNum - 1);
+                    Lecturer selectedLecturer = dept.getLecturers().get(lecturerNum - 1);
 
                     selectedCourse.setLecturer(selectedLecturer);
                     System.out.println("assigned " + selectedLecturer.getName() + " to teach " + selectedCourse.getCourseName());
 
                 } catch (IndexOutOfBoundsException e) {
-                    System.out.println("error: Invalid course or lecturer number! try again.");
+                    System.out.println("error: invalid course or lecturer number!");
                 } catch (InputMismatchException e) {
-                    System.out.println("error: Please enter numbers only!");
+                    System.out.println("error: please enter numbers only!");
                     scanner.nextLine();
                 }
             }
         } catch (InputMismatchException e) {
-            System.out.println("error: Please enter a valid number for assignments!");
+            System.out.println("error: please enter a valid number!");
             scanner.nextLine();
         }
+    }
 
-        // display final information
+    // display all data
+    public static void displayAllData(Department dept) {
         System.out.println("\n=================================");
-        System.out.println("FINAL DEPARTMENT SUMMARY");
+        System.out.println("DEPARTMENT SUMMARY");
         System.out.println("=================================");
 
-        // Department info
         System.out.println("\n---DEPARTMENT INFO---");
-        System.out.println("department: " + csDept.getDepartmentName());
-        System.out.println("total Courses: " + csDept.getCourses().size());
-        System.out.println("total Lecturers: " + csDept.getLecturers().size());
-        System.out.println("total Students: " + csDept.getStudents().size());
+        System.out.println("department: " + dept.getDepartmentName());
+        System.out.println("total courses: " + dept.getCourses().size());
+        System.out.println("total lecturers: " + dept.getLecturers().size());
+        System.out.println("total students: " + dept.getStudents().size());
 
-        // List all courses
+        // courses
         System.out.println("\n---COURSES---");
-        if (csDept.getCourses().isEmpty()) {
+        if (dept.getCourses().isEmpty()) {
             System.out.println("no courses added.");
         } else {
-            for (int i = 0; i < csDept.getCourses().size(); i++) {
-                Course c = csDept.getCourses().get(i);
-                String lecturerName = (c.getLecturer() != null) ? c.getLecturer().getName() : "Not assigned";
+            for (int i = 0; i < dept.getCourses().size(); i++) {
+                Course c = dept.getCourses().get(i);
+                String lecturerName = (c.getLecturer() != null) ? c.getLecturer().getName() : "not assigned";
                 System.out.println((i+1) + ". " + c.getCourseCode() + " - " + c.getCourseName() +
-                        " (" + c.getCreditUnits() + " credits) - Lecturer: " + lecturerName);
+                        " (" + c.getCreditUnits() + " credits) - lecturer: " + lecturerName);
             }
         }
 
-        // List all lecturers
+        // lecturers
         System.out.println("\n---LECTURERS---");
-        if (csDept.getLecturers().isEmpty()) {
+        if (dept.getLecturers().isEmpty()) {
             System.out.println("no lecturers added.");
         } else {
-            for (int i = 0; i < csDept.getLecturers().size(); i++) {
-                Lecturer l = csDept.getLecturers().get(i);
+            for (int i = 0; i < dept.getLecturers().size(); i++) {
+                Lecturer l = dept.getLecturers().get(i);
                 System.out.println((i+1) + ". " + l.getName() + " - " + l.getSubject() +
-                        " - Salary: UGX " + l.calculatePay());
+                        " - salary: UGX " + l.calculatePay());
             }
         }
 
-        // list all students
+        // students
         System.out.println("\n---STUDENTS---");
-        if (csDept.getStudents().isEmpty()) {
-            System.out.println("No students added.");
+        if (dept.getStudents().isEmpty()) {
+            System.out.println("no students added.");
         } else {
-            for (int i = 0; i < csDept.getStudents().size(); i++) {
-                Student s = csDept.getStudents().get(i);
+            for (int i = 0; i < dept.getStudents().size(); i++) {
+                Student s = dept.getStudents().get(i);
                 System.out.println((i+1) + ". " + s.getName() + " (ID: " + s.getId() + ") - " +
-                        s.getCourse() + " - Year " + s.getYear());
+                        s.getCourse() + " - year " + s.getYear());
             }
         }
 
-        // payroll calculation
+        // payroll
         System.out.println("\n---PAYROLL---");
-        try {
-            double totalSalary = 0;
-            if (csDept.getLecturers().isEmpty()) {
-                System.out.println("no lecturers to calculate payroll.");
-            } else {
-                for (Lecturer l : csDept.getLecturers()) {
-                    totalSalary += l.calculatePay();
-                }
-                System.out.println("total monthly payroll: UGX " + totalSalary);
+        double totalSalary = 0;
+        if (dept.getLecturers().isEmpty()) {
+            System.out.println("no lecturers to calculate payroll.");
+        } else {
+            for (Lecturer l : dept.getLecturers()) {
+                totalSalary += l.calculatePay();
             }
-        } catch (Exception e) {
-            System.out.println("error calculating payroll: " + e.getMessage());
-        } finally {
-            System.out.println("payroll calculation attempted.");
+            System.out.println("total monthly payroll: UGX " + totalSalary);
         }
 
-        // demonstrate teaching
+        // teaching session
         System.out.println("\n---TEACHING SESSION---");
-        try {
-            if (csDept.getLecturers().isEmpty()) {
-                System.out.println("no lecturers to teach.");
-            } else {
-                for (Lecturer l : csDept.getLecturers()) {
-                    if (l.getSubject() != null && !l.getSubject().isEmpty()) {
-                        l.teach();
-                    } else {
-                        System.out.println(l.getName() + " has no subject assigned.");
-                    }
+        if (dept.getLecturers().isEmpty()) {
+            System.out.println("no lecturers to teach.");
+        } else {
+            for (Lecturer l : dept.getLecturers()) {
+                if (l.getSubject() != null && !l.getSubject().isEmpty()) {
+                    l.teach();
+                } else {
+                    System.out.println(l.getName() + " has no subject assigned.");
                 }
             }
-        } catch (NullPointerException e) {
-            System.out.println("error: Some lecturer data is missing.");
         }
-
-        System.out.println("\n=================================");
-        System.out.println("PROGRAM COMPLETED SUCCESSFULLY!");
-        System.out.println("=================================");
-
-        scanner.close();
     }
 }
